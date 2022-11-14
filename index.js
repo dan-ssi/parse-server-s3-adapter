@@ -189,12 +189,17 @@ class S3Adapter {
         if (data && !data.Body) {
           return reject(data);
         }
-        res.writeHead(206, {
+        var headers = {
           'Accept-Ranges': data.AcceptRanges,
           'Content-Length': data.ContentLength,
-          'Content-Range': data.ContentRange,
           'Content-Type': data.ContentType,
-        });
+        };
+        if (data.ContentRange != null) {
+          headers['Content-Range'] = data.ContentRange;
+        } else {
+          headers['Content-Range'] = `bytes 0-${data.ContentLength}/${data.ContentLength}`
+        }
+        res.writeHead(206, headers);
         res.write(data.Body);
         res.end();
         return resolve(data.Body);
